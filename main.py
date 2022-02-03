@@ -506,8 +506,8 @@ def neighborhood():
         blur_image_g = ndimage.convolve(converted_img[:,:,1], kernel, mode='constant', cval=0.0)
         blur_image_b = ndimage.convolve(converted_img[:,:,2], kernel, mode='constant', cval=0.0)
         
-        blur_image2 = np.stack((blur_image_r,blur_image_g,blur_image_b),axis=2)
-        st.image(blur_image2,use_column_width=True,clamp=True)
+        blur_image = np.stack((blur_image_r,blur_image_g,blur_image_b),axis=2)
+        st.image(blur_image,use_column_width=True,clamp=True)
 
 
         pixel_l1 = converted_img[:400,:400,:]
@@ -530,7 +530,50 @@ def neighborhood():
             t = """<div class=plain-text>After blur</div>"""
             st.markdown(t, unsafe_allow_html=True)
         
+    else:
+        image_file = st.file_uploader('Upload an image', type=['jpg', 'jpeg', 'png'],key="moving-avg")
+        if image_file is not None:
+            im = Image.open(image_file)
+            converted_img = np.array(im.convert('RGB'))
+            dims = st.slider('Kernel Size',1,20,step=1)
+            #slider = st.sidebar.slider('Adjust the intensity', 5, 21, 5, step=2)
+            #gray_img = color.rgb2gray(converted_img)
+            #blur_image = cv2.boxFilter(converted_img,-1,(dims,dims),cv2.BORDER_DEFAULT)
+            #st.image(blur_image,use_column_width=True,clamp=True)
+
+
+            # Convolving with the appropriate kernel for each channel
+            kernel = np.ones((dims,dims),np.float32)/(dims*dims)
+            blur_image_r = ndimage.convolve(converted_img[:,:,0], kernel, mode='constant', cval=0.0)
+            blur_image_g = ndimage.convolve(converted_img[:,:,1], kernel, mode='constant', cval=0.0)
+            blur_image_b = ndimage.convolve(converted_img[:,:,2], kernel, mode='constant', cval=0.0)
+        
+            blur_image = np.stack((blur_image_r,blur_image_g,blur_image_b),axis=2)
+            st.image(blur_image,use_column_width=True,clamp=True)
+
+
+
+            pixel_l1 = converted_img[:400,:400,:]
+            pixel_l2 = blur_image[:400,:400,:]
+
+
+
+            t = """<div class=underline-text>Upper Sectional View</div>"""
+            st.markdown(t, unsafe_allow_html=True)
+            st.text("")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.image(pixel_l1, clamp=True)
+                t = """<div class=plain-text>Before blur</div>"""
+                st.markdown(t, unsafe_allow_html=True)
+
+            with col2:
+                st.image(pixel_l2,clamp=True)
+                t = """<div class=plain-text>After blur</div>"""
+                st.markdown(t, unsafe_allow_html=True)
     
+
 
 
 
